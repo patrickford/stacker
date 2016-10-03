@@ -31,6 +31,29 @@ var showQuestion = function(question) {
 	return result;
 };
 
+var showAnswerer = function(answerer) {
+
+  // clone our result template code
+  var result = $('.templates .answerer').clone();
+
+  var answererElem = result.find('.user-name');
+  answererElem.text(answerer.user.display_name);
+
+  var image = result.find('.user-img img');
+  image.attr('src', answerer.user.profile_image);
+
+  var profile = result.find('.user-link a');
+  profile.text(answerer.user.link);
+  profile.attr('href', answerer.user.link);
+
+  var posts = result.find('.post-count');
+  posts.text(answerer.post_count);
+
+  var score = result.find('.score');
+  score.text(answerer.score);
+
+	return result;
+};
 
 // this function takes the results object from StackOverflow
 // and returns the number of results and tags to be appended to DOM
@@ -82,38 +105,69 @@ var getUnanswered = function(tags) {
 };
 
 
-var getAnswerers = function(answerers) {
+// var getAnswerers = function(answerers) {
 	
-	// the parameters we need to pass in our request to StackOverflow's API
-	var request = { 
-		site: 'stackoverflow',
-		pagesize: 30
-	};
+// 	// the parameters we need to pass in our request to StackOverflow's API
+// 	var request = { 
+// 		site: 'stackoverflow',
+// 		pagesize: 30
+// 	};
 	
-	$.ajax({
-		url: "https://api.stackexchange.com/2.2/" + answerers +  "/top-answerers/all_time",
-		data: request,
-		dataType: "jsonp",//use jsonp to avoid cross origin issues
-		type: "GET",
-	})
-	.done(function(result){ //this waits for the ajax to return with a succesful promise object
-		console.log(result)
-		var searchResults = showSearchResults(request.tagged, result.items.length);
+// 	$.ajax({
+// 		url: "https://api.stackexchange.com/2.2/" + answerers +  "/top-answerers/all_time",
+// 		data: request,
+// 		dataType: "jsonp",//use jsonp to avoid cross origin issues
+// 		type: "GET",
+// 	})
+// 	.done(function(result){ //this waits for the ajax to return with a succesful promise object
+// 		console.log(result);
+// 		var searchResults = showSearchResults(answerers, result.items.length);
 
-		$('.search-results').html(searchResults);
-		//$.each is a higher order function. It takes an array and a function as an argument.
-		//The function is executed once for each item in the array.
-		$.each(result.items, function(i, item) {
-			var question = showQuestion(item);
-			$('.results').append(question);
-		});
-	})
-	.fail(function(jqXHR, error){ //this waits for the ajax to return with an error promise object
-		var errorElem = showError(error);
-		$('.search-results').append(errorElem);
-	});
+// 		$('.search-results').html(searchResults);
+// 		//$.each is a higher order function. It takes an array and a function as an argument.
+// 		//The function is executed once for each item in the array.
+// 		$.each(result.items, function(i, item) {
+// 			var answerer = showAnswerer(item);
+// 			$('.results').append(answerer);
+// 		});
+// 	})
+// 	.fail(function(jqXHR, error){ //this waits for the ajax to return with an error promise object
+// 		var errorElem = showError(error);
+// 		$('.search-results').append(errorElem);
+// 	});
+// };
+
+var getAnswerers = function(tag) {
+  
+  // the parameters we need to pass in our request to StackOverflow's API
+  var request = { 
+    site: 'stackoverflow',
+    pagesize: 30,
+  };
+  
+  $.ajax({
+    url: "https://api.stackexchange.com/2.2/tags/" + tag + "/top-answerers/all_time",
+    data: request,
+    dataType: "jsonp",//use jsonp to avoid cross origin issues
+    type: "GET",
+  })
+  .done(function(result){ //this waits for the ajax to return with a succesful promise object
+    console.log(result);
+    var searchResults = showSearchResults(tag, result.items.length);
+
+    $('.search-results').html(searchResults);
+    //$.each is a higher order function. It takes an array and a function as an argument.
+    //The function is executed once for each item in the array.
+    $.each(result.items, function(i, item) {
+      var answerer = showAnswerer(item);
+      $('.results').append(answerer);
+    });
+  })
+  .fail(function(jqXHR, error){ //this waits for the ajax to return with an error promise object
+    var errorElem = showError(error);
+    $('.search-results').append(errorElem);
+  });
 };
-
 
 
 $(document).ready( function() {
